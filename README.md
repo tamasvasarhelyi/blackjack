@@ -14,15 +14,15 @@ This project is my own implementation inspired by *The Big Book of Small Python 
 - Dealer draws until reaching 17
 - Win, loss, and draw detection
 - Hidden dealer card during the player's turn
+- Betting system with a persistent balance
+- Double down
+- Multiple rounds
+- Input validation
 
 ## Planned Improvements
 
-- Betting system
-- Double down
-- Multiple rounds
 - ASCII card display
 - Red and black card colors
-- Improved terminal interface
 
 ## Running the Game
 
@@ -36,4 +36,4 @@ python blackjack.py
 
 ## Project Status
 
-This is the first working version of the game. More features and visual improvements will be added in future versions.
+The game is fully playable in the terminal with betting, double down, and multiple rounds. The next development steps will focus on improving the card display with ASCII graphics and card colors.
