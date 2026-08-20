@@ -16,6 +16,26 @@ def create_deck():
     return deck
 
 
+def get_card(card):
+    rank, suit = card
+
+    BLACK = "\033[30m"
+    RED = "\033[31m"
+    WHITE_BG = "\033[107m"
+    RESET = "\033[0m"
+
+    if suit in ("♥", "♦"):
+        color = RED
+    else:
+        color = BLACK
+
+    return [
+        f"{WHITE_BG}{color}{rank:<2}   {RESET}",
+        f"{WHITE_BG}{color}  {suit}  {RESET}",
+        f"{WHITE_BG}{color}   {rank:>2}{RESET}"
+    ]
+
+
 def get_hand_value(hand):
     value = 0
     aces = 0
@@ -37,24 +57,28 @@ def get_hand_value(hand):
 
 
 def print_hands(dealer_hand, player_hand, hidden=False):
-    print("Dealer:", end=" ")
-    for i, card in enumerate(dealer_hand):
-        if i == 0 and hidden:
-            print("??", end=" ")
-        else:
-            print(f"{card[0]}{card[1]}", end=" ")
+    print("Dealer:")
 
-    if not hidden:
-        print(f"  #{get_hand_value(dealer_hand)}", end=" ")
+    for i in range(3):
+        for j, card in enumerate(dealer_hand):
+            if j == 0 and hidden:
+                print("?????", end=" ")
+            else:
+                print(f"{get_card(card)[i]}", end=" ")
+        if i == 2 and not hidden:
+            print(f"#{get_hand_value(dealer_hand)}", end=" ")
+        print()
 
     print()
 
-    print("Player:", end=" ")
-    for card in player_hand:
-        print(f"{card[0]}{card[1]}", end=" ")
+    print("Player:")
 
-    if not hidden:
-        print(f"  #{get_hand_value(player_hand)}", end=" ")
+    for i in range(3):
+        for card in player_hand:
+            print(f"{get_card(card)[i]}", end=" ")
+        if i == 2 and not hidden:
+            print(f"#{get_hand_value(player_hand)}", end=" ")
+        print()
 
     print()
 
