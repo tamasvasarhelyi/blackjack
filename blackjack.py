@@ -1,7 +1,16 @@
 import random
 
 
+# ANSI escape codes for terminal colors.
+BLACK = "\033[30m"
+RED = "\033[31m"
+WHITE_BG = "\033[107m"
+RESET = "\033[0m"
+
+
 def create_deck():
+    """Create and shuffle a standard 52-card deck."""
+
     suits = ("♠", "♥", "♦", "♣")
     ranks = ("2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A")
     deck = []
@@ -17,12 +26,9 @@ def create_deck():
 
 
 def get_card(card):
-    rank, suit = card
+    """Return a three-line colored ASCII representation of a card."""
 
-    BLACK = "\033[30m"
-    RED = "\033[31m"
-    WHITE_BG = "\033[107m"
-    RESET = "\033[0m"
+    rank, suit = card
 
     if suit in ("♥", "♦"):
         color = RED
@@ -37,6 +43,8 @@ def get_card(card):
 
 
 def get_hand_value(hand):
+    """Calculate the Blackjack value of a hand."""
+
     value = 0
     aces = 0
 
@@ -49,6 +57,7 @@ def get_hand_value(hand):
         else:
             value += int(card[0])
 
+    # Convert aces from 11 to 1 as needed to avoid busting.
     while value > 21 and aces > 0:
         value -= 10
         aces -= 1
@@ -57,6 +66,8 @@ def get_hand_value(hand):
 
 
 def print_hands(dealer_hand, player_hand, hidden=False):
+    """Display both hands, optionally hiding the dealer's first card."""
+
     print("Dealer:")
 
     for i in range(3):
@@ -84,6 +95,8 @@ def print_hands(dealer_hand, player_hand, hidden=False):
 
 
 def play_round(money):
+    """Play one round of Blackjack and return the updated balance."""
+
     player_hand = []
     dealer_hand = []
 
@@ -114,6 +127,7 @@ def play_round(money):
 
     print()
 
+    # Player's turn.
     while True:
         if get_hand_value(player_hand) >= 21:
             print_hands(dealer_hand, player_hand)
@@ -156,6 +170,7 @@ def play_round(money):
                 print_hands(dealer_hand, player_hand)
                 break
 
+    # Dealer's turn.
     if not game_over:
         while get_hand_value(dealer_hand) < 17:
             input("press any key to continue\n")
@@ -166,6 +181,7 @@ def play_round(money):
                 result = "win"
                 game_over = True
 
+    # Determine the result if neither player has busted.
     if not game_over:
         if get_hand_value(player_hand) > get_hand_value(dealer_hand):
             result = "win"
@@ -188,20 +204,24 @@ def play_round(money):
     return money
 
 
-money = 5000
+def main():
+    money = 5000
 
+    while True:
+        money = play_round(money)
 
-while True:
-    money = play_round(money)
+        if money <= 0:
+            print("Out of money!")
+            break
 
-    if money <= 0:
-        print("Out of money!")
-        break
-
-    again = input("Play again? (y/n): ").lower()
-    while again not in ["y", "n"]:
-        print("Invalid choice\n")
         again = input("Play again? (y/n): ").lower()
+        while again not in ["y", "n"]:
+            print("Invalid choice\n")
+            again = input("Play again? (y/n): ").lower()
 
-    if again == "n":
-        break
+        if again == "n":
+            break
+
+
+if __name__ == "__main__":
+    main()
