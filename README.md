@@ -20,10 +20,10 @@ This project is my own implementation inspired by *The Big Book of Small Python 
 - Input validation
 - ASCII card display
 - Red and black card colors
+- Natural Blackjack detection with 3:2 payout
 
 ## Planned Improvements
 
-- Natural Blackjack detection with 3:2 payout
 - Split pairs
 - Persistent deck across rounds with reshuffling
 - Game statistics (wins, losses, draws)

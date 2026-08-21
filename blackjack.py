@@ -6,6 +6,7 @@ BLACK = "\033[30m"
 RED = "\033[31m"
 WHITE_BG = "\033[107m"
 RESET = "\033[0m"
+CLEAR_SCREEN = "\033[2J\033[H"
 
 
 def create_deck():
@@ -87,11 +88,22 @@ def print_hands(dealer_hand, player_hand, hidden=False):
     for i in range(3):
         for card in player_hand:
             print(f"{get_card(card)[i]}", end=" ")
-        if i == 2 and not hidden:
+        if i == 2:
             print(f"#{get_hand_value(player_hand)}", end=" ")
         print()
 
     print()
+
+
+def print_table(money, bet, dealer_hand, player_hand, hidden=False):
+    """Clear the screen and display the current game table."""
+
+    print(CLEAR_SCREEN, end="")
+
+    print(f"Money: {money}")
+    print(f"Bet: {bet}\n")
+
+    print_hands(dealer_hand, player_hand, hidden)
 
 
 def play_round(money):
@@ -106,7 +118,7 @@ def play_round(money):
     result = None
 
     while True:
-        print(f"\nMoney: {money}")
+        print(f"{CLEAR_SCREEN}Money: {money}")
 
         try:
             bet = int(input("Bet: "))
@@ -118,6 +130,8 @@ def play_round(money):
             print("Not enough money")
         elif bet <= 0:
             print("Bet must be positive")
+        elif bet % 2 != 0:
+            print("Bet must be even")
         else:
             break
 
@@ -125,61 +139,87 @@ def play_round(money):
         player_hand.append(deck.pop())
         dealer_hand.append(deck.pop())
 
+    player_blackjack = len(player_hand) == 2 and get_hand_value(player_hand) == 21
+    dealer_blackjack = len(dealer_hand) == 2 and get_hand_value(dealer_hand) == 21
+
     print()
 
+    # Check for a natural Blackjack before starting the player's turn.
+    if player_blackjack:
+        print_table(money, bet, dealer_hand, player_hand)
+
+        if dealer_blackjack:
+            result = "draw"
+        else:
+            result = "win"
+
+        game_over = True
+
     # Player's turn.
-    while True:
-        if get_hand_value(player_hand) >= 21:
-            print_hands(dealer_hand, player_hand)
-            if get_hand_value(player_hand) > 21:
+    if not game_over:
+        while True:
+            if get_hand_value(player_hand) == 21:
+                print_table(money, bet, dealer_hand, player_hand)
+                break
+            elif get_hand_value(player_hand) > 21:
+                print_table(money, bet, dealer_hand, player_hand, hidden=True)
                 result = "lost"
                 game_over = True
-            break
-
-        print_hands(dealer_hand, player_hand, hidden=True)
-
-        if len(player_hand) == 2:
-            choice = input("Hit, Stand or Double Down? (h/s/d): ").lower()
-            while choice not in ["h", "s", "d"]:
-                print("Invalid choice\n")
-                choice = input("Hit, Stand or Double Down? (h/s/d): ").lower()
-        else:
-            choice = input("Hit or Stand? (h/s): ").lower()
-            while choice not in ["h", "s"]:
-                print("Invalid choice\n")
-                choice = input("Hit or Stand? (h/s): ").lower()
-
-        print()
-
-        if choice == "h":
-            player_hand.append(deck.pop())
-
-        elif choice == "s":
-            print_hands(dealer_hand, player_hand)
-            break
-
-        elif choice == "d":
-            if 2 * bet > money:
-                print("Not enough money\n")
-            else:
-                bet *= 2
-                player_hand.append(deck.pop())
-                if get_hand_value(player_hand) > 21:
-                    result = "lost"
-                    game_over = True
-                print_hands(dealer_hand, player_hand)
                 break
+
+            print_table(money, bet, dealer_hand, player_hand, hidden=True)
+
+            if len(player_hand) == 2:
+                choice = input("Hit, Stand or Double Down? (h/s/d): ").lower()
+                while choice not in ["h", "s", "d"]:
+                    print("Invalid choice\n")
+                    choice = input("Hit, Stand or Double Down? (h/s/d): ").lower()
+            else:
+                choice = input("Hit or Stand? (h/s): ").lower()
+                while choice not in ["h", "s"]:
+                    print("Invalid choice\n")
+                    choice = input("Hit or Stand? (h/s): ").lower()
+
+            print()
+
+            if choice == "h":
+                player_hand.append(deck.pop())
+
+            elif choice == "s":
+                print_table(money, bet, dealer_hand, player_hand)
+                break
+
+            elif choice == "d":
+                if 2 * bet > money:
+                    input("Not enough money\nPress any key to continue\n")
+                else:
+                    bet *= 2
+                    player_hand.append(deck.pop())
+
+                    if get_hand_value(player_hand) > 21:
+                        result = "lost"
+                        game_over = True
+                        print_table(money, bet, dealer_hand, player_hand, hidden=True)
+                    else:
+                        print_table(money, bet, dealer_hand, player_hand)
+
+                    break
 
     # Dealer's turn.
     if not game_over:
-        while get_hand_value(dealer_hand) < 17:
-            input("press any key to continue\n")
-            dealer_hand.append(deck.pop())
-            print_hands(dealer_hand, player_hand)
+        if dealer_blackjack:
+            result = "lost"
+            game_over = True
+        else:
+            while get_hand_value(dealer_hand) < 17:
+                input("press any key to continue\n")
+                dealer_hand.append(deck.pop())
+                print_table(money, bet, dealer_hand, player_hand)
 
-            if get_hand_value(dealer_hand) > 21:
-                result = "win"
-                game_over = True
+                if get_hand_value(dealer_hand) > 21:
+                    result = "win"
+                    game_over = True
+
 
     # Determine the result if neither player has busted.
     if not game_over:
@@ -191,8 +231,12 @@ def play_round(money):
             result = "draw"
 
     if result == "win":
-        print("You won!\n")
-        money += bet
+        if player_blackjack:
+            print("Blackjack!\n")
+            money += bet * 3 // 2
+        else:
+            print("You won!\n")
+            money += bet
     elif result == "lost":
         print("You lost!\n")
         money -= bet
