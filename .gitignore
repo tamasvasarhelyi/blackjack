@@ -2,3 +2,9 @@
 .venv/
 
 .DS_Store
+
+build/
+dist/
+
+blackjack.command
+blackjack.spec
